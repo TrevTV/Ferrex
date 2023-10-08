@@ -202,7 +202,10 @@ impl Runtime for Il2Cpp {
 
         let native_str = CString::new(name)?;
 
-        self.string_from_raw(native_str.as_ptr())
+        #[cfg(target_arch = "aarch64")]
+        return self.string_from_raw(native_str.as_ptr() as *const i8);
+        #[cfg(not(target_arch = "aarch64"))]
+        return self.string_from_raw(native_str.as_ptr());
     }
 
     fn string_from_raw(&self, name: *const i8) -> Result<UnityString, RuntimeError> {
@@ -216,7 +219,10 @@ impl Runtime for Il2Cpp {
             return Err(RuntimeError::NullPointer("name"));
         }
 
+        #[cfg(not(target_arch = "aarch64"))]
         let res = function(name);
+        #[cfg(target_arch = "aarch64")]
+        let res = function(name as *const u8);
 
         if res.is_null() {
             return Err(RuntimeError::ReturnedNull("il2cpp_string_new"));
