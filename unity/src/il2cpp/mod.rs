@@ -17,7 +17,6 @@ use crate::{
         string::UnityString,
         thread::UnityThread, image::UnityImage, class::UnityClass, property::UnityProperty,
     },
-    join_dll_path,
     libs::{self, NativeLibrary, NativeMethod},
     mono::AssemblyHookType,
     runtime::{Runtime, RuntimeError, RuntimeType},
@@ -39,11 +38,8 @@ unsafe impl Sync for Il2Cpp {}
 
 impl Il2Cpp {
     pub fn new(base_path: PathBuf) -> Result<Self, RuntimeError> {
-        let game_assembly_path = join_dll_path!(base_path, "GameAssembly");
-
-        if !game_assembly_path.exists() {
-            return Err(RuntimeError::GameAssemblyNotFound);
-        }
+        let game_assembly_path = Self::get_game_assembly(base_path)
+            .or_else(|_| return Err(RuntimeError::GameAssemblyNotFound))?;
 
         let lib = libs::load_lib(&game_assembly_path)?;
 
@@ -54,6 +50,24 @@ impl Il2Cpp {
             exports,
         };
         Ok(il2cpp)
+    }
+
+    #[cfg(not(target_os = "android"))]
+    fn get_game_assembly(base_path: PathBuf) -> Result<PathBuf, RuntimeError> {
+        use crate::join_dll_path;
+
+        let game_assembly_path = join_dll_path!(base_path, "GameAssembly");
+
+        if !game_assembly_path.exists() {
+            return Err(RuntimeError::GameAssemblyNotFound);
+        }
+
+        Ok(game_assembly_path)
+    }
+
+    #[cfg(target_os = "android")]
+    fn get_game_assembly(base_path: PathBuf) -> Result<PathBuf, RuntimeError> {
+        Ok(base_path)
     }
 }
 
