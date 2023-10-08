@@ -162,6 +162,7 @@ pub fn get_runtime() -> Result<FerrexRuntime, RuntimeError> {
     }
 }
 
+#[cfg(not(target_os = "android"))]
 fn is_unity(file_path: &PathBuf) -> Result<bool, RuntimeError> {
     let file_name = file_path
         .file_stem()
@@ -185,5 +186,16 @@ fn is_unity(file_path: &PathBuf) -> Result<bool, RuntimeError> {
         Ok(true)
     } else {
         Ok(false)
+    }
+}
+
+#[cfg(target_os = "android")]
+fn is_unity(_: &PathBuf) -> Result<bool, RuntimeError> {
+    let self_lib = libs::load_lib(&PathBuf::from("libil2cpp.so"));
+    if self_lib.is_err() {
+        return Ok(false);
+    }
+    else {
+        return Ok(true);
     }
 }
