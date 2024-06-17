@@ -10,6 +10,8 @@ use super::types::{
 };
 
 type GFunc = extern "C" fn(*mut MonoAssembly, *mut c_void);
+type pthread_t = std::os::raw::c_ulong;
+type tCheckThread = fn(pthread_t) -> bool;
 
 #[derive(Debug, Clone)]
 pub struct MonoExports {
@@ -60,6 +62,8 @@ pub struct MonoExports {
     pub mono_property_get_set_method: Option<NativeMethod<fn(*mut MonoProperty) -> *mut MonoMethod>>,
     pub mono_method_get_unmanaged_thunk: Option<NativeMethod<fn(*mut MonoMethod) -> *mut c_void>>,
     pub mono_object_unbox: Option<NativeMethod<fn(*mut MonoObject) -> *mut c_void>>,
+    pub mono_melonloader_set_thread_checker: Option<NativeLibrary<fn(tCheckThread)>>,
+    pub mono_melonloader_thread_suspend_reload: Option<NativeLibrary<fn()>>,
 }
 
 impl MonoExports {
@@ -102,6 +106,8 @@ impl MonoExports {
             mono_property_get_set_method: get_function_option(&lib,  "mono_property_get_set_method")?,
             mono_method_get_unmanaged_thunk: get_function_option(&lib,  "mono_method_get_unmanaged_thunk")?,
             mono_object_unbox: get_function_option(&lib,  "mono_object_unbox")?,
+            mono_melonloader_set_thread_checker: get_function_option(&lib, "mono_melonloader_set_thread_checker")?,
+            mono_melonloader_thread_suspend_reload: get_function_option(&lib, "mono_melonloader_thread_suspend_reload")?,
         })
     }
 }
