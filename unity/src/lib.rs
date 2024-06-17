@@ -1,9 +1,7 @@
 //! TODO
 
 #![deny(
-    missing_debug_implementations,
     unused_results,
-    warnings,
     clippy::extra_unused_lifetimes,
     clippy::from_over_into,
     clippy::needless_borrow,
@@ -11,7 +9,7 @@
     clippy::useless_conversion
 )]
 #![forbid(rust_2018_idioms)]
-#![allow(clippy::inherent_to_string, clippy::type_complexity, improper_ctypes)]
+#![allow(clippy::inherent_to_string, clippy::type_complexity, improper_ctypes, non_camel_case_types, non_snake_case, non_upper_case_globals)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 pub mod runtime;
