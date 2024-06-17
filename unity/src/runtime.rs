@@ -23,8 +23,10 @@ use crate::{
     il2cpp::Il2Cpp,
     libs::{self},
     mono::{AssemblyHookType, Mono},
-    utils,
 };
+
+#[cfg(not(target_os = "android"))]
+use crate::utils;
 
 pub type FerrexRuntime = Box<dyn Runtime + Send + Sync>;
 
@@ -139,6 +141,7 @@ pub trait Runtime {
 }
 
 /// looks up the runtime
+#[cfg(not(target_os = "android"))]
 pub fn get_runtime() -> Result<FerrexRuntime, RuntimeError> {
     let exe_path = std::env::current_exe()?;
     if !is_unity(&exe_path)? {
@@ -162,6 +165,20 @@ pub fn get_runtime() -> Result<FerrexRuntime, RuntimeError> {
     }
 }
 
+#[cfg(target_os = "android")]
+pub fn get_runtime() -> Result<FerrexRuntime, RuntimeError> {
+    let il2_lib = libs::load_lib(&PathBuf::from("libil2cpp.so"));
+    if il2_lib.is_err() {
+        return Err(RuntimeError::NotUnity);
+    }
+
+    let il2_path = il2_lib.unwrap().path;
+
+    let il2cpp = Il2Cpp::new(il2_path)?;
+    Ok(Box::new(il2cpp) as Box<dyn Runtime + Send + Sync>)
+}
+
+#[cfg(not(target_os = "android"))]
 fn is_unity(file_path: &PathBuf) -> Result<bool, RuntimeError> {
     let file_name = file_path
         .file_stem()

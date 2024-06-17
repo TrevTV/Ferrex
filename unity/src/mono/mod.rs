@@ -268,7 +268,10 @@ impl Runtime for Mono {
 
         let native_str = CString::new(name)?;
 
-        self.string_from_raw(native_str.as_ptr())
+        #[cfg(target_arch = "aarch64")]
+        return self.string_from_raw(native_str.as_ptr() as *const i8);
+        #[cfg(not(target_arch = "aarch64"))]
+        return self.string_from_raw(native_str.as_ptr());
     }
 
     fn string_from_raw(&self, name: *const i8) -> Result<UnityString, RuntimeError> {
@@ -282,7 +285,10 @@ impl Runtime for Mono {
             return Err(RuntimeError::NullPointer("name"));
         }
 
-        let res = function(self.get_domain()?.inner.cast(), name);
+        #[cfg(not(target_arch = "aarch64"))]
+        let res = function(self.get_domain()?.inner.cast(), name as *const i8);
+        #[cfg(target_arch = "aarch64")]
+        let res = function(self.get_domain()?.inner.cast(), name as *const u8);
 
         if res.is_null() {
             return Err(RuntimeError::ReturnedNull("mono_string_new"));
