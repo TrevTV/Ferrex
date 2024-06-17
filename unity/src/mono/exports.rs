@@ -62,8 +62,8 @@ pub struct MonoExports {
     pub mono_property_get_set_method: Option<NativeMethod<fn(*mut MonoProperty) -> *mut MonoMethod>>,
     pub mono_method_get_unmanaged_thunk: Option<NativeMethod<fn(*mut MonoMethod) -> *mut c_void>>,
     pub mono_object_unbox: Option<NativeMethod<fn(*mut MonoObject) -> *mut c_void>>,
-    pub mono_melonloader_set_thread_checker: Option<NativeLibrary<fn(tCheckThread)>>,
-    pub mono_melonloader_thread_suspend_reload: Option<NativeLibrary<fn()>>,
+    pub mono_melonloader_set_thread_checker: Option<NativeMethod<fn(tCheckThread)>>,
+    pub mono_melonloader_thread_suspend_reload: Option<NativeMethod<fn()>>,
 }
 
 impl MonoExports {
